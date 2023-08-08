@@ -1,13 +1,22 @@
 {% extends 'base.html' %}
+
 {% load custom_filters %}
+
 {% block title_block %} Home {% endblock %}
+
 {% block body_block %}
-{% for blog in blogs %}
+{% for blog in page_obj %}
 <h3>{{blog.blog_title}}</h3>
 <h6><i>{{blog.publish_date}}</i></h6>
 <div class="row">
   <div class="col-sm-4">
-    <img src="/media/{{blog.blog_image}}" alt="{{blog.blog_title}}" title="{{blog.blog_title}}" width="100%">
+    <img src="{{blog.blog_image.url}}" alt="{{blog.blog_title}}" title="{{blog.blog_title}}" width="100%">
+    <p>{{ post.blog_content|truncatewords:30 }}</p>
+    <p>{{ blog.blog_content|range_filter|linebreaks }} 
+      <a href="{% url 'App_Blog:blog_details' slug=blog.slug %}" class="btn btn-info btn-sm">Read More</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-primary btn-sm">Share on Facebook</a>
+      <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ blog.blog_title }}" target="_blank" class="btn btn-info btn-sm">Share on Twitter</a>
+    </p>
   </div>
   <div class="col-sm-8">
     <p>{{blog.blog_content|range_filter|linebreaks}} <a href="{% url 'App_Blog:blog_details' slug=blog.slug %}">
@@ -15,7 +24,31 @@
     <h6>Posted By: <a href="#">@{{blog.author}}</a></h6>
     <h6>{{blog.liked_blog.count}} Likes | {{blog.blog_comment.count }} Comments </h6>
   </div>
+  
+
+
 </div>
 <hr>
 {% endfor %}
+
+<div class="pagination">
+  <span class="step-links">
+    {% if page_obj.has_previous %}
+      <a href="?page=1">&laquo; first</a>
+      <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current-page">{{ page_obj.number }}</span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">next</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+    {% endif %}
+  </span>
+</div>
+
+
+
+
+
 {% endblock %}

@@ -1,13 +1,30 @@
-from django.shortcuts import render, HttpResponseRedirect
+from django.shortcuts import render, HttpResponseRedirect,HttpResponse
 from django.views.generic import CreateView, UpdateView, ListView, DetailView, View, TemplateView, DeleteView
 from App_Blog.models import Blog, Comment, Likes
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from App_Blog.forms import CommentForm
+from django.core.paginator import Paginator
+from django.db.models import Count, F
+from datetime import datetime
 import uuid
 # Create your views here.
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 
+# def print_friendly_blog(request, slug):
+#     blog = get_object_or_404(Blog, slug=slug)
+#     context = {'blog': blog}
+#     html_content = render_to_string('App_Blog/print_friendly_blog.html', context)
+
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'filename="{blog.slug}.pdf"'
+
+#     pdfkit.from_string(html_content, False, options={'encoding': 'UTF-8'}, output_path=response)
+
+#     return response
 
 
 class CreateBlog(LoginRequiredMixin, CreateView):
@@ -23,10 +40,19 @@ class CreateBlog(LoginRequiredMixin, CreateView):
         blog_obj.save()
         return HttpResponseRedirect(reverse('index'))
 
-class BlogList(ListView):
-    context_object_name = 'blogs'
-    model = Blog
-    template_name = 'App_Blog/blog_list.html'
+# class BlogList(ListView):
+#     context_object_name = 'blogs'
+#     model = Blog
+#     template_name = 'App_Blog/blog_list.html'
+def blog_list(request):
+    blogs = Blog.objects.all()
+    paginator = Paginator(blogs, 5)  # Display 5 blogs per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    recent_posts = Blog.objects.order_by('-publish_date')[:5]
+
+    return render(request, 'App_Blog/blog_list.html', {'page_obj': page_obj,'recent_posts':recent_posts})
 
 
 
@@ -53,7 +79,7 @@ def blog_details(request, slug):
 def liked(request, pk):
     blog = Blog.objects.get(pk=pk)
     user = request.user
-    already_liked = Likes.objects.filter(blog=blog, user=user)
+    already_liked = Likes.objects.filter(blog=blog, user=user
     if not already_liked:
         liked_post = Likes(blog=blog, user=user)
         liked_post.save()
@@ -91,3 +117,14 @@ def search_blog(request):
         blogs = Blog.objects.all()
 
     return render(request, 'App_Blog/blog_list.html', {'blogs': blogs})
+
+
+def listish(request):
+    blogs = Blog.objects.all()
+    paginator = Paginator(blogs, 5)  # Display 5 blogs per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'App_Blog/blog_list.html', {'page_obj': page_obj})
+

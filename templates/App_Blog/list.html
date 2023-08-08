@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title_block %} Home {% endblock %}
+{% block body_block %}
+<div class="container">
+    <h3>Total Blogs: {{ page_obj.paginator.count }}</h3> <!-- Display the total number of blogs -->
+    {% for blog in page_obj %}
+    <h3>{{ blog.blog_title }}</h3>
+    <!-- Rest of your blog content display -->
+    <hr>
+    {% endfor %}
+    <p>Debug: page_obj={{ page_obj }}</p> <!-- Debug: Print page_obj to see its contents -->
+</div>
+{% endblock %}
